@@ -5,7 +5,6 @@
         <variable
             name="numpad"
             type="com.boubalos.mycalculator.views.bindings.MyNumpad" />
-        <import type="com.boubalos.mycalculator.views.bindings.MyNumpad"/>
         <import type="android.view.View"/>
 
     </data>
@@ -40,7 +39,8 @@
             android:padding="5dp"
             android:text="C" />
 
-        <TextView
+        <ImageView
+            android:src="@drawable/backspace_icon"
             android:id="@+id/backspace_btn"
             style="@style/CalculatorButtons"
             android:layout_width="0dp"
@@ -49,8 +49,8 @@
             android:layout_columnWeight="1"
             android:layout_margin="5dp"
             android:gravity="center"
-            android:onClick="@{numpad::onButtonPress}"
-            android:padding="5dp"
+            android:onClick="@{numpad::onBackspacePress}"
+            android:padding="15dp"
             android:text="b" />
 
         <TextView

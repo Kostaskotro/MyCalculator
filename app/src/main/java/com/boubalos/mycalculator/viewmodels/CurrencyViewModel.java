@@ -38,7 +38,7 @@ public class CurrencyViewModel extends ParentViewModel {
     public static final String INIT_COMPLETE = "init complete";
     public static final String SERVICE_ERROR = "service error";
     public static final String READY = "ready";
-    public static final int CURRENCY_FIELDS = 3;
+    public static final int CURRENCY_FIELDS = 5;
 
     private MutableLiveData<String> errorMessage = new MutableLiveData<>();
     private MutableLiveData<Boolean> connectionError = new MutableLiveData<>();

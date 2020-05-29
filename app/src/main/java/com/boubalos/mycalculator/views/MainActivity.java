@@ -1,6 +1,5 @@
 package com.boubalos.mycalculator.views;
 
-import android.animation.LayoutTransition;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.Animation;
@@ -56,26 +55,28 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
 
     private void PlayStartingAnimation() {
-        final Animation anim = AnimationUtils.loadAnimation(this, R.anim.bounce_from_bottom);
+        final Animation anim = AnimationUtils.loadAnimation(this, R.anim.slide_from_bottom);
         numpadBinding.getRoot().startAnimation(anim);
         int offset = 1000;
 
         int count = numPadView.getChildCount();
         for (int i = 0; i < count; i++) {
-            TextView button = (TextView) numPadView.getChildAt(count - i - 1);
-            final Animation myAnim = AnimationUtils.loadAnimation(this, R.anim.bounce_from_right);
+            View button =  numPadView.getChildAt(count - i - 1);
+            final Animation myAnim = AnimationUtils.loadAnimation(this, R.anim.bounce_from_top);
             myAnim.setStartOffset(i * 50 + offset);
             button.startAnimation(myAnim);
         }
-        final Animation myAnim = AnimationUtils.loadAnimation(this, R.anim.bounce_from_top);
+        final Animation myAnim = AnimationUtils.loadAnimation(this, R.anim.slide_from_top);
         mainViewPager.startAnimation(myAnim);
     }
 
     private void HideOperatorsAnimation() {
         int count = numPadView.getChildCount();
         for (int i = 0; i < count; i++) {
-            TextView button = (TextView) numPadView.getChildAt(count - i - 1);
-            char c = button.getText().charAt(0);
+            View button = numPadView.getChildAt(count - i - 1);
+            char c='C';
+            if(button instanceof TextView)
+             c = ((TextView)button).getText().charAt(0);
             if (!(Character.isDigit(c) || c == 'C' || c == 'b' || c == '.')) {
                 final Animation myAnim = AnimationUtils.loadAnimation(this, R.anim.disappear_from_bot);
                 myAnim.setStartOffset(i * 10);
@@ -101,10 +102,12 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     private void ShowOperatorsAnimation() {
         int count = numPadView.getChildCount();
         for (int i = 0; i < count; i++) {
-            TextView button = (TextView) numPadView.getChildAt(count - i - 1);
-            char c = button.getText().charAt(0);
+            View button = numPadView.getChildAt(count - i - 1);
+            char c='C';
+            if(button instanceof TextView)
+                c = ((TextView)button).getText().charAt(0);
             if (!(Character.isDigit(c) || c == 'C' || c == 'b' || c == '.')) {
-                final Animation myAnim = AnimationUtils.loadAnimation(this, R.anim.bounce_from_right);
+                final Animation myAnim = AnimationUtils.loadAnimation(this, R.anim.bounce_from_top);
                 myAnim.setStartOffset(i * 10);
                 myAnim.setStartOffset(i * 10);
                 myAnim.setAnimationListener(new Animation.AnimationListener() {

@@ -26,7 +26,8 @@
             android:layout_gravity="end"
             android:textAlignment="textEnd"
             android:text="@{viewModel.history}"
-            android:textSize="20dp" />
+            android:textSize="20dp"
+            android:layout_marginBottom="20dp"/>
 
         <TextView
             android:id="@+id/input"

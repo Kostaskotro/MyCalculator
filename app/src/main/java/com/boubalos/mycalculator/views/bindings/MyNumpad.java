@@ -19,6 +19,10 @@ public class MyNumpad {
         CharSequence input = ((TextView) v).getText();
         activeviewModel.setInput(input.charAt(0));
     }
+    public void onBackspacePress(View v){
+        playAnim(v);
+        activeviewModel.setInput('b');
+    }
 
     public void playAnim(View v) {
         FloatPropertyCompat<View> scale = new FloatPropertyCompat<View>("") {
