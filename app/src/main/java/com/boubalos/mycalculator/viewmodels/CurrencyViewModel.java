@@ -103,7 +103,7 @@ public class CurrencyViewModel extends ParentViewModel {
     }
 
 
-    public void setActiveCurrency(Integer active) { //changes witch currency ite, is active
+    public void setActiveCurrency(Integer active)      { //changes witch currency item(row), is active
         if (this.active.getValue() != active) {
             this.active.setValue(active);
             Log.d("Active Currency : ", currencies.get(liveCurrecies[active]).toString());
@@ -271,7 +271,7 @@ public class CurrencyViewModel extends ParentViewModel {
 
     }
 
-    //////////////// Retreive/Save data from Shared prefs //////////////////
+    //////////////// Retrieve/Save data from Shared prefs //////////////////
     private void checkPrefs() {
         String savedCurrencies = SharedPrefsUtils.readValueFromSharedPreferences(context, MY_PREFS, CURRENCIES);
         String savedRates = SharedPrefsUtils.readValueFromSharedPreferences(context, MY_PREFS, RATES);

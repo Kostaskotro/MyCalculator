@@ -24,7 +24,7 @@ public class MyNumpad {
         activeviewModel.setInput('b');
     }
 
-    public void playAnim(View v) {
+    private void playAnim(View v) {
         FloatPropertyCompat<View> scale = new FloatPropertyCompat<View>("") {
             @Override
             public float getValue(View view) {
