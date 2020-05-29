@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+      <variable
+          name="viewModel"
+          type="com.boubalos.mycalculator.viewmodels.CalculatorViewModel" />
+    </data>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="20dp"
+        android:background="@drawable/round_edges_white"
+        android:elevation="10dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+       android:layout_gravity="bottom"
+        android:gravity="bottom"
+        android:orientation="vertical"
+       >
+
+        <TextView
+            android:id="@+id/history"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:textAlignment="textEnd"
+            android:text="@{viewModel.history}"
+            android:textSize="20dp" />
+
+        <TextView
+            android:id="@+id/input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:ems="10"
+            android:text="@{viewModel.input}"
+            android:textAlignment="textEnd"
+            android:textSize="30dp" />
+    </LinearLayout>
+    </ScrollView>
+</layout>

@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Mycalculator</string>
+    <string name="no_connection">Currency converter requires an internet connection </string>
+    <string name="no_connection_for_update">Connect to the internet to get more up to date results </string>
+</resources>
