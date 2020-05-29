@@ -1,5 +1,6 @@
 package com.boubalos.mycalculator.views;
 
+import android.animation.LayoutTransition;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.Animation;
@@ -13,6 +14,7 @@ import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager.widget.ViewPager;
 
+import com.boubalos.mycalculator.databinding.MainActivityLayoutBinding;
 import com.boubalos.mycalculator.views.bindings.MyNumpad;
 import com.boubalos.mycalculator.views.adapters.MyPagerAdapter;
 import com.boubalos.mycalculator.R;
@@ -31,17 +33,19 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     CalculatorNumpadLayoutBinding numpadBinding;
     CurrencyViewModel currencyViewModel;
     CalculatorViewModel calculatorViewModel;
+    MainActivityLayoutBinding mainActivityLayoutBinding;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.final_layout);
+        mainActivityLayoutBinding=DataBindingUtil.setContentView(this,R.layout.main_activity_layout);
+        mainActivityLayoutBinding.setLifecycleOwner(this);
         mainViewPager = findViewById(R.id.viewPager);
         pagerAdapter = new MyPagerAdapter(getSupportFragmentManager(), BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         mainViewPager.setAdapter(pagerAdapter);
         mainViewPager.addOnPageChangeListener(this);
         numpadBinding = DataBindingUtil.bind(findViewById(R.id.numpad_layout));
-        numPadView = findViewById(R.id.numpad_layout);
+        numPadView = mainActivityLayoutBinding.getRoot().findViewById(R.id.numpad_layout);
         numpad = new MyNumpad();
         calculatorViewModel = new ViewModelProvider(this).get(CalculatorViewModel.class);
         currencyViewModel = new ViewModelProvider(this).get(CurrencyViewModel.class);
@@ -108,11 +112,9 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                     public void onAnimationStart(Animation animation) {
                         button.setVisibility(View.VISIBLE);
                     }
-
                     @Override
                     public void onAnimationEnd(Animation animation) {
                     }
-
                     @Override
                     public void onAnimationRepeat(Animation animation) {
                     }
@@ -120,15 +122,10 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                 button.startAnimation(myAnim);
             }
         }
-
-
     }
 
     @Override
-    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-    }
-
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
     @Override
     public void onPageSelected(int position) {
         if (position == 1) {
@@ -139,9 +136,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
             ShowOperatorsAnimation();
             numpad.setActiveviewModel(calculatorViewModel);
         }
-
     }
-
     @Override
     public void onPageScrollStateChanged(int state) {
     }

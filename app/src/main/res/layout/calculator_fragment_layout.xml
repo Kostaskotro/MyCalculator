@@ -54,7 +54,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
                         android:ems="10"
-                        android:text="@{viewModel.input}"
+                        android:text="@{viewModel.expression}"
                         android:textAlignment="textEnd"
                         android:textSize="40sp" />
                 </LinearLayout>

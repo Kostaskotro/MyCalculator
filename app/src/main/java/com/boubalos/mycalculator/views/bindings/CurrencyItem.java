@@ -5,7 +5,6 @@ import android.text.TextWatcher;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Toast;
 
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.MutableLiveData;
@@ -14,20 +13,22 @@ import com.boubalos.mycalculator.Utils.Utils;
 import com.boubalos.mycalculator.models.Currency;
 import com.boubalos.mycalculator.viewmodels.CurrencyViewModel;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 
 import static com.boubalos.mycalculator.viewmodels.CurrencyViewModel.READY;
 
-public class CurrencyItem implements AdapterView.OnItemSelectedListener, View.OnTouchListener, TextWatcher {
-    //Todo add loading state
+public class CurrencyItem implements AdapterView.OnItemSelectedListener, View.OnTouchListener, TextWatcher , View.OnClickListener {
+
+
     CurrencyViewModel viewModel;
     private int index;
-    LifecycleOwner fragment;
+    private LifecycleOwner fragment;
     private MutableLiveData<Boolean> ready = new MutableLiveData<>();
-    MutableLiveData<String> value = new MutableLiveData<>();
-    MutableLiveData<Boolean> isActive = new MutableLiveData<>();
-    MutableLiveData<Currency> currency = new MutableLiveData<>();
+    private MutableLiveData<String> value = new MutableLiveData<>();
+    private MutableLiveData<Boolean> isActive = new MutableLiveData<>();
+    private MutableLiveData<Currency> currency = new MutableLiveData<>();
 
     public CurrencyItem(int i, LifecycleOwner owner, CurrencyViewModel viewModel) {
         index = i;
@@ -42,7 +43,7 @@ public class CurrencyItem implements AdapterView.OnItemSelectedListener, View.On
         viewModel.getRatesData().observe(fragment, this::ratesChanged);
     }
 
-    private void activeChanged(int i) {
+    private void activeChanged(int i) {//active currency changed
         if (i == index) {
             isActive.setValue(true);
             value.setValue("1");
@@ -51,9 +52,9 @@ public class CurrencyItem implements AdapterView.OnItemSelectedListener, View.On
         }
     }
 
-    private void ratesChanged(HashMap<String, Double> rates) {
+    private void ratesChanged(HashMap<String, Double> rates) {                                                 //rates updated
         try {
-            Double rate1 = rates.get(currency.getValue().getName());                                                   //rate of this currency
+            Double rate1 = rates.get(currency.getValue().getName());                                                                            //rate of this currency
             Double rate2 = rates.get(viewModel.getCurrencies().get(viewModel.getLiveCurrecies()[viewModel.getActive().getValue()]).getName());  //rate of active currency
             if (rate1 != null && rate2 != null) {
                 ready.setValue(true);
@@ -64,16 +65,13 @@ public class CurrencyItem implements AdapterView.OnItemSelectedListener, View.On
         }
     }
 
-    private void activeAmountChanged(double amount) {
+    private void activeAmountChanged(double amount) { //called when active currency amount is changed
         if (viewModel.getState().getValue().equals(READY)) {
             String from = viewModel.getCurrencies().get(viewModel.getLiveCurrecies()[viewModel.getActive().getValue()]).getName();
             String to = viewModel.getCurrencies().get(viewModel.getLiveCurrecies()[index]).getName();
-            value.setValue(Utils.ConvertCurrency(amount, viewModel.getRates(), from, to) + "");
+            DecimalFormat formater = new DecimalFormat("#.####");
+            value.setValue(formater.format(Utils.ConvertCurrency(amount, viewModel.getRates(), from, to)));
         }
-    }
-
-    public int getIndex() {
-        return index;
     }
 
     @Override
@@ -85,18 +83,9 @@ public class CurrencyItem implements AdapterView.OnItemSelectedListener, View.On
     }
 
     @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-
-    }
-
-    @Override
     public boolean onTouch(View v, MotionEvent event) {
-        viewModel.setActive(index);
+        viewModel.setActiveCurrency(index);
         return false;
-    }
-
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
     }
 
     @Override
@@ -106,16 +95,13 @@ public class CurrencyItem implements AdapterView.OnItemSelectedListener, View.On
                 if (!(Character.isDigit(s.charAt(i)) || s.charAt(i) == '.' || s.charAt(i) == ',' || s.charAt(i) == 'e' || s.charAt(i) == 'E'))
                     throw new InputMismatchException("Input Not a Number");
             }
-            if (isActive.getValue() && s.length() != 0)
-                viewModel.setActiveAmount(Double.parseDouble(s.toString()));
-
         } catch (InputMismatchException e) {
             e.printStackTrace();
         }
     }
 
-    @Override
-    public void afterTextChanged(Editable s) {
+    public int getIndex() {
+        return index;
     }
 
     public MutableLiveData<Currency> getCurrency() {
@@ -132,6 +118,18 @@ public class CurrencyItem implements AdapterView.OnItemSelectedListener, View.On
 
     public MutableLiveData<Boolean> getReady() {
         return ready;
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {}
+    @Override
+    public void afterTextChanged(Editable s) {}
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+    @Override
+    public void onClick(View v) {
+
     }
 }
 

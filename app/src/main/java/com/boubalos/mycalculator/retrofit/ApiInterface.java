@@ -11,7 +11,6 @@ public interface ApiInterface {
     @GET(CURRENCIES_ENDPOINT)
     Call<Object> GetAllAvailableCurrencies();
 
-
     @GET(LATEST_RATES_ENDPOINT)
     Call<Object> GetLatestRates(@Query("symbols") String symbols);
 

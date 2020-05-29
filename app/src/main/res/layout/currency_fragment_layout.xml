@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-<LinearLayout
+   <LinearLayout
     android:id="@+id/parent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:weightSum="100"
     android:background="@color/softWhite"
     android:orientation="vertical">
-</LinearLayout>
+   </LinearLayout>
         <TextView
             android:id="@+id/no_connection_message"
             android:layout_width="match_parent"
@@ -19,8 +22,16 @@
             android:layout_alignBottom="@id/parent"
             android:gravity="center"
             android:textAlignment="center"
-            android:text="@string/no_connection"
+            android:visibility="@{viewmodel.connectionError? View.VISIBLE : View.GONE}"
+            android:text="@{viewmodel.errorMessage}"
             android:textColor="@color/Red"/>
     </RelativeLayout>
+    </ScrollView>
+<data>
+    <import type="android.view.View"/>
 
+    <variable
+        name="viewmodel"
+        type="com.boubalos.mycalculator.viewmodels.CurrencyViewModel" />
+</data>
 </layout>

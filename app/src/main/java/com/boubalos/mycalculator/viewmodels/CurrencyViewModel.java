@@ -3,16 +3,15 @@ package com.boubalos.mycalculator.viewmodels;
 import android.app.Application;
 import android.content.Context;
 import android.util.Log;
-import android.view.View;
 
 import androidx.lifecycle.MutableLiveData;
 
 import com.boubalos.mycalculator.Utils.SharedPrefsUtils;
+import com.boubalos.mycalculator.Utils.Utils;
 import com.boubalos.mycalculator.retrofit.ApiClient;
 import com.boubalos.mycalculator.retrofit.ApiInterface;
 import com.boubalos.mycalculator.models.Currency;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.google.gson.internal.LinkedTreeMap;
 
 import org.json.JSONArray;
@@ -22,6 +21,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -30,15 +30,18 @@ import retrofit2.Response;
 import static com.boubalos.mycalculator.Utils.Constants.CURRENCIES;
 import static com.boubalos.mycalculator.Utils.Constants.MY_PREFS;
 import static com.boubalos.mycalculator.Utils.Constants.RATES;
+import static com.boubalos.mycalculator.Utils.Constants.SELECTED_CURRENCIES;
 
 public class CurrencyViewModel extends ParentViewModel {
     public static final String LOADING = "loading";
     public static final String CANT_CONNECT = "cant connect";
     public static final String INIT_COMPLETE = "init complete";
+    public static final String SERVICE_ERROR = "service error";
     public static final String READY = "ready";
     public static final int CURRENCY_FIELDS = 3;
 
-
+    private MutableLiveData<String> errorMessage = new MutableLiveData<>();
+    private MutableLiveData<Boolean> connectionError = new MutableLiveData<>();
     private MutableLiveData<Integer> active = new MutableLiveData<>();
     private MutableLiveData<Double> activeAmount = new MutableLiveData<>();
 
@@ -47,62 +50,136 @@ public class CurrencyViewModel extends ParentViewModel {
     private int[] liveCurrecies = new int[CURRENCY_FIELDS];                                //currencies the user have chosen
     private MutableLiveData<String> state = new MutableLiveData<>();
     private ArrayList<Currency> currencies = new ArrayList<>();                             //all currencies retrieved by server
+    private String text = "";
+    private Context context;
 
     public CurrencyViewModel(Application application) {
         super(application);
+        context = application.getApplicationContext();
+        connectionError.setValue(false);
         state.setValue(LOADING);
-            getList();
+        LoadSelectedCurrencies();
+        getListFromServer();
     }
 
     @Override
-    public void setInput(String input) {
-        if (input == null || input.equals("")) input = "0";
-        activeAmount.setValue(Double.parseDouble(input));//Todo update input here
+    public void setInput(char c) { //we get input from numpad here
+        if (Character.isDigit(c)) {
+            text = text + c;
+            refreshAmount();
+        } else
+            switch (c) {
+                case 'C': {
+                    text = "";
+                    refreshAmount();
+                    break;
+                }
+                case 'b': {
+                    if (text.length() > 0)
+                        text = text.substring(0, text.length() - 1);
+                    refreshAmount();
+                    break;
+                }
+                case '.': {
+                    if (Utils.canPutPoint(text))
+                        text = text + '.';
+                    refreshAmount();
+                    break;
+                }
+            }
+
     }
 
+    private void refreshAmount() {
+        if (text.equals("")) activeAmount.setValue(1d);
+        else activeAmount.setValue(Double.parseDouble(text));
+    }
 
     public void setLiveCurrency(int position, int i) {      // if rate for the Currency chosen is not in memory do an ApiCall for the rates
         liveCurrecies[i] = position;
-        if (rates.get(currencies.get(position).getName()) == null) {
-            state.setValue(LOADING);
-            updateRates();
-        } else ratesData.setValue(rates);                  //update rates in case the rates are already available
+        ratesData.setValue(rates);                  //update rates in case the rates are already available
+        saveSelectedCurrencies();
     }
 
-    public void setActive(Integer active) {
+
+    public void setActiveCurrency(Integer active) { //changes witch currency ite, is active
         if (this.active.getValue() != active) {
             this.active.setValue(active);
             Log.d("Active Currency : ", currencies.get(liveCurrecies[active]).toString());
+            text = "";
+            activeAmount.setValue(1d);
         }
     }
 
-    public MutableLiveData<String> getState() {return state; }
+    public MutableLiveData<String> getState() {
+        return state;
+    }
 
-    public ArrayList<Currency> getCurrencies() {return currencies; }
+    public ArrayList<Currency> getCurrencies() {
+        return currencies;
+    }
 
-    public int[] getLiveCurrecies() { return liveCurrecies; }
+    public int[] getLiveCurrecies() {
+        return liveCurrecies;
+    }
 
-    public MutableLiveData<Integer> getActive() { return active; }
+    public MutableLiveData<Integer> getActive() {
+        return active;
+    }
 
-    public MutableLiveData<Double> getActiveAmount() { return activeAmount; }
+    public MutableLiveData<Double> getActiveAmount() {
+        return activeAmount;
+    }
 
-    public HashMap<String, Double> getRates() { return rates; }
+    public HashMap<String, Double> getRates() {
+        return rates;
+    }
 
-    public void setActiveAmount(Double activeAmount) { this.activeAmount.setValue(activeAmount); }
+    public void setActiveAmount(Double activeAmount) {
+        this.activeAmount.setValue(activeAmount);
+    }
 
-    public MutableLiveData<HashMap<String, Double>> getRatesData() { return ratesData; }
+    public MutableLiveData<HashMap<String, Double>> getRatesData() {
+        return ratesData;
+    }
 
+    public MutableLiveData<String> getErrorMessage() {
+        return errorMessage;
+    }
 
+    public MutableLiveData<Boolean> getConnectionError() {
+        return connectionError;
+    }
 
-    ///API Calls
-    private void updateRates() {
+    //////////////////API Calls/////////////////////////
+    private void getListFromServer() {     //get currencies list from fixer
+        ApiInterface apiInterface = ApiClient.getClient().create(ApiInterface.class);
+        Call<Object> call = apiInterface.GetAllAvailableCurrencies();
+        call.enqueue(new Callback<Object>() {
+            @Override
+            public void onResponse(Call<Object> call, Response<Object> response) {
+                if (isSuccessfull((LinkedTreeMap) response.body())) {
+                    connectionError.setValue(false);
+                    parseCurrenciesList((LinkedTreeMap) response.body());
+                    Log.d("CallResponse : ", currencies.get(0).getDescription());
+                    getRatesFromServer();
+                } else {
+                    getErrorMessage((LinkedTreeMap) response.body());
+                    state.setValue(SERVICE_ERROR);
+                }
+            }
+            @Override
+            public void onFailure(Call<Object> call, Throwable t) {
+                checkPrefs();
+            }
+        });
+    }
+
+    private void getRatesFromServer() {        //get conversion rates from fixer
         ApiInterface apiInterface;
         apiInterface = ApiClient.getClient().create(ApiInterface.class);
-        /**
-         GET List Resources
-         **/
         String symbols = "";
-        for (Currency c :currencies) {
+        for (Currency c : currencies) {
             if (!symbols.equals("")) symbols += ",";
             symbols += c.getName();
         }
@@ -110,42 +187,40 @@ public class CurrencyViewModel extends ParentViewModel {
         call.enqueue(new Callback<Object>() {
             @Override
             public void onResponse(Call<Object> call, Response<Object> response) {
-                parseRates((LinkedTreeMap) response.body());
+                if (isSuccessfull((LinkedTreeMap) response.body())) {
+                    connectionError.setValue(false);
+                    parseRates((LinkedTreeMap) response.body());
+                } else {
+                    getErrorMessage((LinkedTreeMap) response.body());
+                    state.setValue(SERVICE_ERROR);
+                }
             }
-
             @Override
             public void onFailure(Call<Object> call, Throwable t) {
-                try {
-                    checkPrefs();
-                }catch (JSONException e){
-                    e.printStackTrace();
-                }
+                checkPrefs();
             }
         });
     }
 
-    private void getList() {
+    private boolean isSuccessfull(LinkedTreeMap response) {
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            return jsonObject.getBoolean("success");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
-        ApiInterface apiInterface = ApiClient.getClient().create(ApiInterface.class);
-        /**
-         GET List Resources
-         **/
-        Call<Object> call = apiInterface.GetAllAvailableCurrencies();
-        call.enqueue(new Callback<Object>() {
-            @Override
-            public void onResponse(Call<Object> call, Response<Object> response) {
-                parseResponse((LinkedTreeMap) response.body());
-                Log.d("CallResponse : ", currencies.get(0).getDescription());
-            }
-            @Override
-            public void onFailure(Call<Object> call, Throwable t) {
-               try {
-                   checkPrefs();
-               }catch (JSONException e){
-                   e.printStackTrace();
-               }
-            }
-        });
+    private void getErrorMessage(LinkedTreeMap response) {
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            jsonObject = jsonObject.getJSONObject("error");
+            errorMessage.setValue(jsonObject.getString("info"));
+            connectionError.setValue(true);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void parseRates(LinkedTreeMap response) {
@@ -153,7 +228,7 @@ public class CurrencyViewModel extends ParentViewModel {
             JSONObject jsonObject = new JSONObject(response);
             jsonObject = jsonObject.getJSONObject("rates");
             Iterator<String> keys = jsonObject.keys();
-            rates =new HashMap<>();
+            rates = new HashMap<>();
             while (keys.hasNext()) {
                 String key = keys.next();
                 rates.put(key, (Double) jsonObject.get(key));
@@ -163,13 +238,13 @@ public class CurrencyViewModel extends ParentViewModel {
             ratesData.setValue(rates);
             Gson gson = new Gson();
             String hashMapString = gson.toJson(rates);
-            SharedPrefsUtils.writeToSharedPreferences(getApplication().getApplicationContext(),MY_PREFS,RATES,hashMapString);
+            SharedPrefsUtils.writeToSharedPreferences(context, MY_PREFS, RATES, hashMapString);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private void parseResponse(LinkedTreeMap response) {
+    private void parseCurrenciesList(LinkedTreeMap response) {
         try {
             JSONObject jsonObject = new JSONObject(response);
             jsonObject = jsonObject.getJSONObject("symbols");
@@ -184,7 +259,7 @@ public class CurrencyViewModel extends ParentViewModel {
             activeAmount.setValue(1d);
             Gson gson = new Gson();
             String listString = gson.toJson(currencies);
-            SharedPrefsUtils.writeToSharedPreferences(getApplication().getApplicationContext(),MY_PREFS,CURRENCIES,listString);
+            SharedPrefsUtils.writeToSharedPreferences(context, MY_PREFS, CURRENCIES, listString);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -192,32 +267,65 @@ public class CurrencyViewModel extends ParentViewModel {
 
     }
 
-
-    private void checkPrefs() throws JSONException{
-        String savedCurrencies = SharedPrefsUtils.readValueFromSharedPreferences(getApplication().getApplicationContext(),MY_PREFS,CURRENCIES);
-        if(savedCurrencies.equals("")) state.setValue(CANT_CONNECT);
+    //////////////// Retreive/Save data from Shared prefs //////////////////
+    private void checkPrefs() {
+        String savedCurrencies = SharedPrefsUtils.readValueFromSharedPreferences(context, MY_PREFS, CURRENCIES);
+        String savedRates = SharedPrefsUtils.readValueFromSharedPreferences(context, MY_PREFS, RATES);
+        if (savedCurrencies.equals("") || savedRates.equals("")) state.setValue(CANT_CONNECT);
         else {
-            JSONArray jsonArray= new JSONArray(savedCurrencies);         //parse JsonString saved ad SharedPrefs
-         for(int i=0;i<jsonArray.length();i++) {
-               Gson gson= new Gson();
-                Currency currency = gson.fromJson(jsonArray.get(i).toString(),Currency.class);
-                currencies.add(currency);
+            currencies = parseCurrenciesJSON(savedCurrencies);
+            Gson gson = new Gson();
+            rates = gson.fromJson(savedRates, HashMap.class);
+
+            if (rates.size() > 0 && currencies.size() > 0) {
+                state.setValue(INIT_COMPLETE);
+                active.setValue(0);
+                activeAmount.setValue(1d);
+                ratesData.setValue(rates);
+                state.setValue(READY);
             }
         }
-          String savedRates = SharedPrefsUtils.readValueFromSharedPreferences(getApplication().getApplicationContext(),MY_PREFS,RATES);
-        if(savedRates.equals("")) state.setValue(CANT_CONNECT);
-        else{
-            Gson gson = new Gson();
-            rates = gson.fromJson(savedRates,HashMap.class);
+    }
+
+    private ArrayList<Currency> parseCurrenciesJSON(String listString) {
+        ArrayList<Currency> list = new ArrayList<>();
+        try {
+            JSONArray jsonArray = new JSONArray(listString);         //parse JsonString saved ad SharedPrefs
+            for (int i = 0; i < jsonArray.length(); i++) {
+                Gson gson = new Gson();
+                Currency currency = gson.fromJson(jsonArray.get(i).toString(), Currency.class);
+                list.add(currency);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
-        if(rates.size()>0&&currencies.size()>0)
-        {
-            state.setValue(INIT_COMPLETE);
-            active.setValue(0);
-            activeAmount.setValue(1d);
-            ratesData.setValue(rates);
-            state.setValue(READY);
+        return list;
+    }
+
+    private void saveSelectedCurrencies() {
+        ArrayList<Currency> saveCurrencies = new ArrayList<>();
+        for (int x : liveCurrecies)
+            saveCurrencies.add(currencies.get(x));
+        ArrayList<Integer> intList = new ArrayList<>();
+        for (int i : liveCurrecies)
+            intList.add(i);
+        Gson gson = new Gson();
+        String listString = gson.toJson(intList);
+        SharedPrefsUtils.writeToSharedPreferences(context, MY_PREFS, SELECTED_CURRENCIES, listString);
+    }
+
+    private void LoadSelectedCurrencies() {
+        try {
+            String savedArray = SharedPrefsUtils.readValueFromSharedPreferences(context, MY_PREFS, SELECTED_CURRENCIES);
+            if (!savedArray.equals("")) {
+                JSONArray jsonArray = new JSONArray(savedArray);
+                for (int i = 0; i < CURRENCY_FIELDS; i++) {
+                    liveCurrecies[i] = jsonArray.getInt(i);
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
-////////////////////////
+
 }

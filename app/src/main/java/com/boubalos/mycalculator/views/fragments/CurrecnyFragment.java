@@ -22,7 +22,6 @@ import com.boubalos.mycalculator.viewmodels.CurrencyViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.boubalos.mycalculator.viewmodels.CurrencyViewModel.CANT_CONNECT;
 import static com.boubalos.mycalculator.viewmodels.CurrencyViewModel.CURRENCY_FIELDS;
 import static com.boubalos.mycalculator.viewmodels.CurrencyViewModel.INIT_COMPLETE;
 import static com.boubalos.mycalculator.viewmodels.CurrencyViewModel.LOADING;
@@ -33,7 +32,7 @@ public class CurrecnyFragment extends Fragment {
     private CurrencyViewModel viewModel;
     private CurrencyFragmentLayoutBinding currencyFragmentLayoutBinding;
     private LinearLayout parent;
-    TextView noConnectionText;
+    private TextView noConnectionText;
 
 
     @Nullable
@@ -42,9 +41,8 @@ public class CurrecnyFragment extends Fragment {
         currencyFragmentLayoutBinding = DataBindingUtil.inflate(inflater, R.layout.currency_fragment_layout, container, false);
         currencyFragmentLayoutBinding.setLifecycleOwner(this);
         viewModel = new ViewModelProvider(getActivity()).get(CurrencyViewModel.class);
+        currencyFragmentLayoutBinding.setViewmodel(viewModel);
         View rootView = currencyFragmentLayoutBinding.getRoot();
-        noConnectionText = rootView.findViewById(R.id.no_connection_message);
-        noConnectionText.setVisibility(View.GONE);
         parent = rootView.findViewById(R.id.parent);
         if (viewModel.getCurrencies().size() > 0) addViews(); //in case of orientation change
         else viewModel.getState().observe(getViewLifecycleOwner(), this::stateChanged);
@@ -58,10 +56,6 @@ public class CurrecnyFragment extends Fragment {
             }
             case INIT_COMPLETE: {
                 addViews();
-                break;
-            }
-            case CANT_CONNECT: {
-                noConnectionText.setVisibility(View.VISIBLE);
                 break;
             }
         }

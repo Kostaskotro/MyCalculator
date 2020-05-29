@@ -9,7 +9,7 @@ public class Constants {
     public static final String MY_PREFS = "sharedprefs";
     public static final String SELECTED_CURRENCIES = "selected";
 
-    final public static String API_KEY_FIXER = "4574ca047273bfe6b82e2e97efdccba9";
+    final public static String API_KEY_FIXER = "4e5e33b1bedefa2e20ad79d3bf3496fc";
     final public static String BASE_URL = "http://data.fixer.io/api/";
     final public static String CURRENCIES_ENDPOINT = "symbols?access_key=" + API_KEY_FIXER;
     final public static String LATEST_RATES_ENDPOINT = "latest?access_key=" + API_KEY_FIXER + "&base=EUR&symbols=";

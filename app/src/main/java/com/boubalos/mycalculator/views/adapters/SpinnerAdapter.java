@@ -26,7 +26,7 @@ public class SpinnerAdapter extends ArrayAdapter<Currency> {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         if (convertView == null)
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.spinner_item, parent, false);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.spinner_label, parent, false);
 
         TextView textView = convertView.findViewById(R.id.text);
         textView.setText(getItem(position).getName());
