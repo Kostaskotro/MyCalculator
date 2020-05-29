@@ -5,6 +5,9 @@ import org.mozilla.javascript.EcmaError;
 import org.mozilla.javascript.EvaluatorException;
 import org.mozilla.javascript.Scriptable;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 public class Utils {
@@ -37,6 +40,15 @@ public class Utils {
                 else result = true;
         }
         return result;
+    }
+
+
+    public static String getDate(){
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => " + c);
+        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+       return df.format(c);
+
     }
 
 

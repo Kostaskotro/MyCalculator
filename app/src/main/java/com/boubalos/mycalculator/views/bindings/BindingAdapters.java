@@ -1,9 +1,5 @@
 package com.boubalos.mycalculator.views.bindings;
 
-import android.app.Dialog;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.databinding.BindingAdapter;

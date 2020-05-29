@@ -6,11 +6,12 @@ import android.util.Log;
 
 import androidx.lifecycle.MutableLiveData;
 
+import com.boubalos.mycalculator.R;
 import com.boubalos.mycalculator.Utils.SharedPrefsUtils;
 import com.boubalos.mycalculator.Utils.Utils;
+import com.boubalos.mycalculator.models.Currency;
 import com.boubalos.mycalculator.retrofit.ApiClient;
 import com.boubalos.mycalculator.retrofit.ApiInterface;
-import com.boubalos.mycalculator.models.Currency;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 
@@ -21,13 +22,13 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 import static com.boubalos.mycalculator.Utils.Constants.CURRENCIES;
+import static com.boubalos.mycalculator.Utils.Constants.LAST_UPDATE;
 import static com.boubalos.mycalculator.Utils.Constants.MY_PREFS;
 import static com.boubalos.mycalculator.Utils.Constants.RATES;
 import static com.boubalos.mycalculator.Utils.Constants.SELECTED_CURRENCIES;
@@ -40,7 +41,7 @@ public class CurrencyViewModel extends ParentViewModel {
     public static final String READY = "ready";
     public static final int CURRENCY_FIELDS = 5;
 
-    private MutableLiveData<String> errorMessage = new MutableLiveData<>();
+    private MutableLiveData<String> userMessage = new MutableLiveData<>();
     private MutableLiveData<Boolean> connectionError = new MutableLiveData<>();
     private MutableLiveData<Integer> active = new MutableLiveData<>();
     private MutableLiveData<Double> activeAmount = new MutableLiveData<>();
@@ -143,8 +144,8 @@ public class CurrencyViewModel extends ParentViewModel {
         return ratesData;
     }
 
-    public MutableLiveData<String> getErrorMessage() {
-        return errorMessage;
+    public MutableLiveData<String> getUserMessage() {
+        return userMessage;
     }
 
     public MutableLiveData<Boolean> getConnectionError() {
@@ -190,6 +191,9 @@ public class CurrencyViewModel extends ParentViewModel {
                 if (isSuccessfull((LinkedTreeMap) response.body())) {
                     connectionError.setValue(false);
                     parseRates((LinkedTreeMap) response.body());
+                    String date =Utils.getDate();
+                    SharedPrefsUtils.writeToSharedPreferences(context,MY_PREFS,LAST_UPDATE,date);
+                    userMessage.setValue("Currencies updated : "+ date);
                 } else {
                     getErrorMessage((LinkedTreeMap) response.body());
                     state.setValue(SERVICE_ERROR);
@@ -216,7 +220,7 @@ public class CurrencyViewModel extends ParentViewModel {
         try {
             JSONObject jsonObject = new JSONObject(response);
             jsonObject = jsonObject.getJSONObject("error");
-            errorMessage.setValue(jsonObject.getString("info"));
+            userMessage.setValue(jsonObject.getString("info"));
             connectionError.setValue(true);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -271,7 +275,11 @@ public class CurrencyViewModel extends ParentViewModel {
     private void checkPrefs() {
         String savedCurrencies = SharedPrefsUtils.readValueFromSharedPreferences(context, MY_PREFS, CURRENCIES);
         String savedRates = SharedPrefsUtils.readValueFromSharedPreferences(context, MY_PREFS, RATES);
-        if (savedCurrencies.equals("") || savedRates.equals("")) state.setValue(CANT_CONNECT);
+        if (savedCurrencies.equals("") || savedRates.equals("")) {
+            state.setValue(CANT_CONNECT);
+            userMessage.setValue(context.getString(R.string.no_connection));
+            connectionError.setValue(true);
+        }
         else {
             currencies = parseCurrenciesJSON(savedCurrencies);
             Gson gson = new Gson();
@@ -283,6 +291,7 @@ public class CurrencyViewModel extends ParentViewModel {
                 activeAmount.setValue(1d);
                 ratesData.setValue(rates);
                 state.setValue(READY);
+                userMessage.setValue("Currencies updated : "+ SharedPrefsUtils.readValueFromSharedPreferences(context,MY_PREFS,LAST_UPDATE));
             }
         }
     }

@@ -13,11 +13,11 @@ import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.boubalos.mycalculator.views.bindings.CurrencyItem;
 import com.boubalos.mycalculator.R;
 import com.boubalos.mycalculator.databinding.CurrencyFragmentLayoutBinding;
 import com.boubalos.mycalculator.databinding.CurrencyItemBinding;
 import com.boubalos.mycalculator.viewmodels.CurrencyViewModel;
+import com.boubalos.mycalculator.views.bindings.CurrencyItem;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -13,13 +13,13 @@ import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager.widget.ViewPager;
 
-import com.boubalos.mycalculator.databinding.MainActivityLayoutBinding;
-import com.boubalos.mycalculator.views.bindings.MyNumpad;
-import com.boubalos.mycalculator.views.adapters.MyPagerAdapter;
 import com.boubalos.mycalculator.R;
 import com.boubalos.mycalculator.databinding.CalculatorNumpadLayoutBinding;
+import com.boubalos.mycalculator.databinding.MainActivityLayoutBinding;
 import com.boubalos.mycalculator.viewmodels.CalculatorViewModel;
 import com.boubalos.mycalculator.viewmodels.CurrencyViewModel;
+import com.boubalos.mycalculator.views.adapters.MyPagerAdapter;
+import com.boubalos.mycalculator.views.bindings.MyNumpad;
 
 import static androidx.fragment.app.FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT;
 

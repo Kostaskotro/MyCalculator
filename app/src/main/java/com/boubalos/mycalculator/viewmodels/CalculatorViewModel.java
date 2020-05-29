@@ -1,7 +1,6 @@
 package com.boubalos.mycalculator.viewmodels;
 
 import android.app.Application;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;

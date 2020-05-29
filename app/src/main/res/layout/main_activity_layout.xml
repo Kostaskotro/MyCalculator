@@ -20,13 +20,12 @@
             android:gravity="center|top"
             android:orientation="vertical"
             android:background="@color/softWhite"
-            android:weightSum="10">
+            android:weightSum="100">
             <androidx.viewpager.widget.ViewPager
                 android:id="@+id/viewPager"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="5"
-              >
+                android:layout_weight="45">
 
                 <com.google.android.material.tabs.TabLayout
                     android:id="@+id/tabs"
@@ -44,8 +43,8 @@
                 android:id="@+id/numpad_layout"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="5"
-                android:layout_margin="20dp"
+                android:layout_weight="55"
+                android:layout_margin="15dp"
                 layout="@layout/calculator_numpad_layout"
                 />
 
